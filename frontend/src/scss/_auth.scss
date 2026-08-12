@@ -1,0 +1,89 @@
+.auth-page {
+  max-width: 420px;
+  margin: 3rem auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    input, select, textarea {
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s;
+      &:focus { border-color: #38bdf8; }
+    }
+
+    button[type='submit'] {
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      &:hover { background: #0284c7; }
+    }
+
+    button[type='button'] {
+      background: none;
+      border: 1px solid #e2e8f0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #64748b;
+      &:hover { background: #f1f5f9; }
+    }
+  }
+
+  p {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    a { color: #0ea5e9; text-decoration: none; }
+  }
+}
+
+.auth-role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  &.business { background: #dbeafe; color: #1d4ed8; }
+  &.worker   { background: #d1fae5; color: #065f46; }
+}
+
+.role-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+
+  button {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    background: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #64748b;
+    &.active {
+      background: #0ea5e9;
+      color: white;
+      border-color: #0ea5e9;
+      font-weight: 500;
+    }
+  }
+}

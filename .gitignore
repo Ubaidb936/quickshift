@@ -1,0 +1,40 @@
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+venv/
+env/
+.venv/
+
+# ---- Environment variables (never commit secrets) ----
+.env
+.env.*
+!.env.example
+
+# ---- Database ----
+*.db
+*.sqlite3
+instawork.db
+
+# ---- Node ----
+node_modules/
+dist/
+.vite/
+.cache/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Docker ----
+*.log
+
+# ---- IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo

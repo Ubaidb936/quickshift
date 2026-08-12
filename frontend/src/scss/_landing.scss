@@ -1,0 +1,39 @@
+.landing {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  > p { color: #64748b; margin-bottom: 2.5rem; }
+
+  .landing-cards {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  .landing-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    width: 260px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, transform 0.15s;
+
+    &:hover { border-color: #0ea5e9; transform: translateY(-2px); }
+
+    .landing-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    h2 { margin-bottom: 0.5rem; }
+    p { color: #64748b; font-size: 0.875rem; margin-bottom: 1.25rem; }
+    button { width: 100%; }
+  }
+
+  .landing-login {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    span { color: #0ea5e9; cursor: pointer; text-decoration: underline; }
+  }
+}

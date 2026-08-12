@@ -1,0 +1,50 @@
+.shift-card, .applicant-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #0ea5e9;
+
+  &.status-paused   { border-left-color: #f59e0b; opacity: 0.75; }
+  &.status-accepted { border-left-color: #10b981; }
+  &.status-declined { border-left-color: #ef4444; }
+
+  h3 { margin-bottom: 0.4rem; font-size: 1.05rem; }
+  p  { color: #64748b; font-size: 0.875rem; margin-bottom: 0.2rem; }
+
+  .shift-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+
+    .pay {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #10b981;
+      white-space: nowrap;
+      margin-left: 1rem;
+    }
+  }
+
+  .business-name { font-weight: 500; color: #475569; margin-bottom: 0.4rem; }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+
+    button {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      font-size: 0.875rem;
+      background: #f8fafc;
+      color: #475569;
+      &:hover { background: #e2e8f0; }
+    }
+  }
+}
