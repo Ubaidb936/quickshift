@@ -5,8 +5,10 @@ from app.database.db import get_db
 from app.models.models import Match, Shift
 from app.utils.schemas import MatchResponse
 from app.auth import require_business, require_worker
+from app.logger import get_logger
 
 router = APIRouter(prefix="/matches", tags=["matches"])
+logger = get_logger("matches")
 
 
 def _to_response(m: Match) -> MatchResponse:
@@ -47,6 +49,7 @@ def show_interest(shift_id: int, db: Session = Depends(get_db), user=Depends(req
         raise HTTPException(status_code=404, detail="Shift not found or not active")
     existing = db.query(Match).filter(Match.shift_id == shift_id, Match.worker_id == user["id"]).first()
     if existing:
+        logger.warning("Duplicate interest attempt", extra={"worker_id": user["id"], "shift_id": shift_id})
         raise HTTPException(status_code=400, detail="Already shown interest in this shift")
     match = Match(
         business_id=shift.business_id,
@@ -57,6 +60,7 @@ def show_interest(shift_id: int, db: Session = Depends(get_db), user=Depends(req
     db.add(match)
     db.commit()
     db.refresh(match)
+    logger.info("Worker showed interest", extra={"match_id": match.id, "worker_id": user["id"], "shift_id": shift_id})
     return _to_response(match)
 
 
@@ -67,6 +71,7 @@ def accept_worker(match_id: int, db: Session = Depends(get_db), user=Depends(req
         raise HTTPException(status_code=404, detail="Match not found")
     match.status = "accepted"
     db.commit()
+    logger.info("Worker accepted", extra={"match_id": match_id, "worker_id": match.worker_id, "business_id": user["id"]})
     return {"status": "accepted"}
 
 
@@ -77,6 +82,7 @@ def decline_worker(match_id: int, db: Session = Depends(get_db), user=Depends(re
         raise HTTPException(status_code=404, detail="Match not found")
     match.status = "declined"
     db.commit()
+    logger.info("Worker declined", extra={"match_id": match_id, "worker_id": match.worker_id, "business_id": user["id"]})
     return {"status": "declined"}
 
 
@@ -87,4 +93,5 @@ def mark_unavailable(match_id: int, db: Session = Depends(get_db), user=Depends(
         raise HTTPException(status_code=404, detail="Match not found")
     match.status = "unavailable"
     db.commit()
+    logger.info("Worker marked unavailable", extra={"match_id": match_id, "worker_id": user["id"]})
     return {"status": "unavailable"}

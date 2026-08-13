@@ -5,8 +5,10 @@ from app.database.db import get_db
 from app.models.models import Shift
 from app.utils.schemas import ShiftCreate, ShiftUpdate, ShiftResponse
 from app.auth import require_business, get_current_user
+from app.logger import get_logger
 
 router = APIRouter(prefix="/shifts", tags=["shifts"])
+logger = get_logger("shifts")
 
 
 def _to_response(shift: Shift) -> ShiftResponse:
@@ -32,6 +34,7 @@ def post_shift(data: ShiftCreate, db: Session = Depends(get_db), user=Depends(re
     db.add(shift)
     db.commit()
     db.refresh(shift)
+    logger.info("Shift posted", extra={"shift_id": shift.id, "business_id": user["id"], "position": shift.position})
     return _to_response(shift)
 
 
@@ -65,6 +68,7 @@ def edit_shift(shift_id: int, data: ShiftUpdate, db: Session = Depends(get_db), 
         setattr(shift, field, value)
     db.commit()
     db.refresh(shift)
+    logger.info("Shift updated", extra={"shift_id": shift_id, "business_id": user["id"]})
     return _to_response(shift)
 
 
@@ -75,6 +79,7 @@ def pause_shift(shift_id: int, db: Session = Depends(get_db), user=Depends(requi
         raise HTTPException(status_code=404, detail="Shift not found")
     shift.status = "paused" if shift.status == "active" else "active"
     db.commit()
+    logger.info("Shift status toggled", extra={"shift_id": shift_id, "new_status": shift.status, "business_id": user["id"]})
     return {"status": shift.status}
 
 
@@ -85,4 +90,5 @@ def delete_shift(shift_id: int, db: Session = Depends(get_db), user=Depends(requ
         raise HTTPException(status_code=404, detail="Shift not found")
     shift.status = "deleted"
     db.commit()
+    logger.info("Shift deleted", extra={"shift_id": shift_id, "business_id": user["id"]})
     return {"detail": "Shift deleted"}
