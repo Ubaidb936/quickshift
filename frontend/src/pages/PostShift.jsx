@@ -9,10 +9,12 @@ export default function PostShift() {
     pay_rate: '', duties: '', attire: '', num_workers: 1,
   })
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
     try {
       await api.post('/shifts/', {
         ...form,
@@ -22,6 +24,8 @@ export default function PostShift() {
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to post shift')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -41,7 +45,9 @@ export default function PostShift() {
         <textarea placeholder="Duties (what will the worker be doing?)" value={form.duties} onChange={set('duties')} rows={3} />
         <input placeholder="Attire (e.g. Black shirt, closed-toe shoes)" value={form.attire} onChange={set('attire')} />
         <input type="number" placeholder="Number of Workers Needed" value={form.num_workers} onChange={set('num_workers')} min="1" />
-        <button type="submit">Post Shift</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Posting...' : 'Post Shift'}
+        </button>
         <button type="button" onClick={() => navigate('/dashboard')}>Cancel</button>
       </form>
     </div>

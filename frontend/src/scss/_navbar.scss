@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: #0f172a;
+  background: var(--slate-900);
   color: white;
 
   .brand {
@@ -18,6 +18,7 @@
     display: flex;
     gap: 1.25rem;
     align-items: center;
+    flex-wrap: wrap;
 
     a {
       color: #94a3b8;
@@ -30,7 +31,7 @@
 
     button {
       background: none;
-      border: 1px solid #334155;
+      border: 1px solid var(--slate-700);
       color: #94a3b8;
       padding: 0.3rem 0.75rem;
       border-radius: 6px;
@@ -38,5 +39,14 @@
       font-size: 0.875rem;
       &:hover { border-color: #94a3b8; color: white; }
     }
+  }
+
+  @media (max-width: 540px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+
+    .nav-links { gap: 0.75rem; }
   }
 }

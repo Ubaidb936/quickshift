@@ -1,40 +1,49 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
 import ShiftCard from '../components/ShiftCard'
+import Spinner from '../components/Spinner'
+import Toast from '../components/Toast'
+import EmptyState from '../components/EmptyState'
 
 export default function WorkerFeed() {
   const [shifts, setShifts] = useState([])
   const [applied, setApplied] = useState(new Set())
-  const [toast, setToast] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [toast, setToast] = useState({ message: '', type: 'success' })
 
   useEffect(() => {
-    api.get('/shifts').then(({ data }) => setShifts(data))
+    api.get('/shifts')
+      .then(({ data }) => setShifts(data))
+      .finally(() => setLoading(false))
   }, [])
 
   const showInterest = async (shiftId) => {
     try {
       await api.post(`/matches/interest/${shiftId}`)
       setApplied(prev => new Set([...prev, shiftId]))
-      setToast('Interest shown! The business will review your profile.')
+      setToast({ message: 'Interest shown! The business will review your profile.', type: 'success' })
     } catch (err) {
-      setToast(err.response?.data?.detail || 'Something went wrong')
+      setToast({ message: err.response?.data?.detail || 'Something went wrong', type: 'error' })
     }
-    setTimeout(() => setToast(''), 3000)
   }
+
+  if (loading) return <Spinner text="Loading shifts..." />
 
   return (
     <div>
-      <h2>Available Shifts</h2>
-      {toast && <div className="toast">{toast}</div>}
-      {shifts.length === 0 && <p className="empty">No shifts available right now. Check back soon.</p>}
-      {shifts.map(shift => (
-        <ShiftCard
-          key={shift.id}
-          shift={shift}
-          applied={applied.has(shift.id)}
-          onApply={() => showInterest(shift.id)}
-        />
-      ))}
+      <h2 className="page-title">Available Shifts</h2>
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '' })} />
+      {shifts.length === 0
+        ? <EmptyState icon="📋" title="No shifts available" description="Check back soon — new shifts are posted daily." />
+        : shifts.map(shift => (
+            <ShiftCard
+              key={shift.id}
+              shift={shift}
+              applied={applied.has(shift.id)}
+              onApply={() => showInterest(shift.id)}
+            />
+          ))
+      }
     </div>
   )
 }
