@@ -7,8 +7,8 @@ from app.api.matches import router as matches_router
 from app.middleware import LoggingMiddleware
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(title="QuickShift API", version="1.0.0")
+def create_app(lifespan=None) -> FastAPI:
+    app = FastAPI(title="QuickShift API", version="1.0.0", lifespan=lifespan)
 
     # ── Suppress uvicorn's built-in access log — our middleware handles it ──
     logging.getLogger("uvicorn.access").handlers.clear()

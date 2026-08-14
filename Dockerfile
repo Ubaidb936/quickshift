@@ -9,4 +9,4 @@ COPY backend/ .
 
 EXPOSE 8000
 
-CMD ["python", "main.py"]
+CMD ["gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]

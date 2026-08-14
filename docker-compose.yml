@@ -27,8 +27,9 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - DATABASE_URL=postgresql://quickshift:quickshift@db:5432/quickshift
+      - DATABASE_URL=postgresql+asyncpg://quickshift:quickshift@db:5432/quickshift
       - SECRET_KEY=changeme-in-production
+      - WEB_CONCURRENCY=4
     depends_on:
       db:
         condition: service_healthy   # wait for Postgres to be ready before starting

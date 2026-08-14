@@ -27,11 +27,14 @@ export default function WorkerFeed() {
     }
   }
 
-  if (loading) return <Spinner text="Loading shifts..." />
+  if (loading) return <div className="container"><Spinner text="Loading shifts..." /></div>
 
   return (
-    <div>
-      <h2 className="page-title">Available Shifts</h2>
+    <div className="container">
+      <div className="feed-header">
+        <h2 className="page-title">Available Shifts</h2>
+        <p className="page-subtitle">{shifts.length} open shift{shifts.length !== 1 ? 's' : ''} near you</p>
+      </div>
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '' })} />
       {shifts.length === 0
         ? <EmptyState icon="📋" title="No shifts available" description="Check back soon — new shifts are posted daily." />

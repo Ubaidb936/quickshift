@@ -20,11 +20,14 @@ export default function MyMatches() {
     setMatches(matches.map(m => m.id === matchId ? { ...m, status: 'unavailable' } : m))
   }
 
-  if (loading) return <Spinner text="Loading applications..." />
+  if (loading) return <div className="container"><Spinner text="Loading applications..." /></div>
 
   return (
-    <div>
-      <h2 className="page-title">My Applications</h2>
+    <div className="container">
+      <div className="feed-header">
+        <h2 className="page-title">My Applications</h2>
+        <p className="page-subtitle">{matches.length} application{matches.length !== 1 ? 's' : ''} submitted</p>
+      </div>
       {matches.length === 0
         ? <EmptyState icon="📩" title="No applications yet" description="Browse available shifts and show interest to get started." action="Browse Shifts" onAction={() => navigate('/feed')} />
         : matches.map(match => (
@@ -35,9 +38,9 @@ export default function MyMatches() {
               </div>
               <span className={`status-badge status-${match.status}`}>{match.status}</span>
               {match.status === 'interested' && (
-                <button onClick={() => markUnavailable(match.id)} style={{ marginTop: '0.75rem' }}>
-                  Mark Unavailable
-                </button>
+                <div className="actions" style={{ marginTop: '0.75rem' }}>
+                  <button onClick={() => markUnavailable(match.id)}>Mark Unavailable</button>
+                </div>
               )}
             </div>
           ))

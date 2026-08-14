@@ -21,33 +21,31 @@ export default function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <div className="container">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register/business" element={<RegisterBusiness />} />
-          <Route path="/register/worker" element={<RegisterWorker />} />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register/business" element={<RegisterBusiness />} />
+        <Route path="/register/worker" element={<RegisterWorker />} />
 
-          <Route path="/dashboard" element={
-            <ProtectedRoute role="business"><BusinessDashboard /></ProtectedRoute>
-          } />
-          <Route path="/shifts/create" element={
-            <ProtectedRoute role="business"><PostShift /></ProtectedRoute>
-          } />
-          <Route path="/shifts/:shiftId/applicants" element={
-            <ProtectedRoute role="business"><ShiftApplicants /></ProtectedRoute>
-          } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute role="business"><BusinessDashboard /></ProtectedRoute>
+        } />
+        <Route path="/shifts/create" element={
+          <ProtectedRoute role="business"><PostShift /></ProtectedRoute>
+        } />
+        <Route path="/shifts/:shiftId/applicants" element={
+          <ProtectedRoute role="business"><ShiftApplicants /></ProtectedRoute>
+        } />
 
-          <Route path="/feed" element={
-            <ProtectedRoute role="worker"><WorkerFeed /></ProtectedRoute>
-          } />
-          <Route path="/my-matches" element={
-            <ProtectedRoute role="worker"><MyMatches /></ProtectedRoute>
-          } />
+        <Route path="/feed" element={
+          <ProtectedRoute role="worker"><WorkerFeed /></ProtectedRoute>
+        } />
+        <Route path="/my-matches" element={
+          <ProtectedRoute role="worker"><MyMatches /></ProtectedRoute>
+        } />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   )
 }

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.database.db import get_db
 from app.models.models import Business, Worker
 from app.utils.schemas import BusinessRegister, WorkerRegister, LoginRequest, TokenResponse
@@ -11,8 +12,9 @@ logger = get_logger("auth")
 
 
 @router.post("/register/business", response_model=TokenResponse)
-def register_business(data: BusinessRegister, db: Session = Depends(get_db)):
-    if db.query(Business).filter(Business.email == data.email).first():
+async def register_business(data: BusinessRegister, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Business).where(Business.email == data.email))
+    if result.scalars().first():
         logger.warning("Business registration failed — email already exists", extra={"email": data.email})
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -24,8 +26,8 @@ def register_business(data: BusinessRegister, db: Session = Depends(get_db)):
         working_hours=data.working_hours,
     )
     db.add(business)
-    db.commit()
-    db.refresh(business)
+    await db.commit()
+    await db.refresh(business)
 
     logger.info("Business registered", extra={"business_id": business.id, "business_name": business.name})
     token = create_token({"sub": business.email, "role": "business", "id": business.id})
@@ -33,8 +35,9 @@ def register_business(data: BusinessRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/register/worker", response_model=TokenResponse)
-def register_worker(data: WorkerRegister, db: Session = Depends(get_db)):
-    if db.query(Worker).filter(Worker.email == data.email).first():
+async def register_worker(data: WorkerRegister, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Worker).where(Worker.email == data.email))
+    if result.scalars().first():
         logger.warning("Worker registration failed — email already exists", extra={"email": data.email})
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -46,8 +49,8 @@ def register_worker(data: WorkerRegister, db: Session = Depends(get_db)):
         profession=data.profession,
     )
     db.add(worker)
-    db.commit()
-    db.refresh(worker)
+    await db.commit()
+    await db.refresh(worker)
 
     logger.info("Worker registered", extra={"worker_id": worker.id, "worker_name": worker.name, "profession": worker.profession})
     token = create_token({"sub": worker.email, "role": "worker", "id": worker.id})
@@ -55,11 +58,13 @@ def register_worker(data: WorkerRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(data: LoginRequest, db: Session = Depends(get_db)):
+async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
     if data.role == "business":
-        user = db.query(Business).filter(Business.email == data.email).first()
+        result = await db.execute(select(Business).where(Business.email == data.email))
+        user = result.scalars().first()
     elif data.role == "worker":
-        user = db.query(Worker).filter(Worker.email == data.email).first()
+        result = await db.execute(select(Worker).where(Worker.email == data.email))
+        user = result.scalars().first()
     else:
         raise HTTPException(status_code=400, detail="Role must be 'business' or 'worker'")
 

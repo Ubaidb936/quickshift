@@ -1,38 +1,91 @@
 .btn-primary {
-  background: #0ea5e9;
+  background: var(--sky);
   color: white;
   border: none;
-  padding: 0.5rem 1.25rem;
+  padding: 0.55rem 1.35rem;
   border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
   font-size: 0.9rem;
-  display: inline-block;
-  font-weight: 500;
-  &:hover { background: #0284c7; }
+  font-weight: 600;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: background 0.15s, transform 0.1s;
+  &:hover { background: var(--sky-dark); }
+  &:active { transform: scale(0.98); }
+}
+
+.btn-outline {
+  background: transparent;
+  color: white;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  padding: 0.55rem 1.35rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  &:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.5); }
+}
+
+.btn-lg {
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  border-radius: 10px;
 }
 
 .btn-secondary {
-  background: none;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
-  padding: 0.4rem 1rem;
+  background: white;
+  border: 1px solid var(--slate-200);
+  color: var(--slate-600);
+  padding: 0.5rem 1rem;
   border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
   font-size: 0.875rem;
-  display: inline-block;
+  font-weight: 500;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.15s, border-color 0.15s;
+  &:hover { background: var(--slate-100); border-color: var(--slate-300); }
 }
 
-.btn-success { background: #10b981 !important; color: white !important; border-color: #10b981 !important; }
-.btn-danger  { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+.btn-success {
+  background: var(--green) !important;
+  color: white !important;
+  border-color: var(--green) !important;
+  font-family: inherit;
+  &:hover { background: var(--green-dark) !important; }
+}
+
+.btn-danger {
+  background: var(--red) !important;
+  color: white !important;
+  border-color: var(--red) !important;
+  font-family: inherit;
+}
 
 .btn-applied {
   background: #d1fae5 !important;
-  color: #10b981 !important;
+  color: #059669 !important;
   border: 1px solid #6ee7b7;
   cursor: default !important;
-  padding: 0.5rem 1.25rem;
+  padding: 0.55rem 1.35rem;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }

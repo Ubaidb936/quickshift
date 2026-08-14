@@ -1,7 +1,12 @@
 .error {
   color: var(--red);
   font-size: 0.875rem;
-  margin-bottom: 0.5rem;
+  font-weight: 500;
+  padding: 0.65rem 0.9rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────
@@ -13,12 +18,13 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  padding: 0.8rem 1.25rem;
   border-radius: var(--radius);
   font-size: 0.9rem;
   font-weight: 500;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   animation: toastIn 0.25s ease;
+  max-width: 340px;
 
   &.toast-success { background: var(--green); color: white; }
   &.toast-error   { background: var(--red);   color: white; }
@@ -43,15 +49,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 5rem 2rem;
   gap: 1rem;
 }
 
 .spinner {
-  border: 3px solid #e2e8f0;
+  border: 3px solid var(--slate-200);
   border-top-color: var(--sky);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.65s linear infinite;
 }
 
 @keyframes spin {
@@ -60,19 +66,21 @@
 
 .spinner-text {
   color: var(--slate-500);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 // ── Confirm Dialog ─────────────────────────────────────────────────────
 .dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 900;
   animation: fadeIn 0.15s ease;
+  backdrop-filter: blur(2px);
 }
 
 @keyframes fadeIn {
@@ -82,15 +90,15 @@
 
 .dialog {
   background: white;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 1.75rem 2rem;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-lg);
 
   p {
     font-size: 1rem;
-    color: #1e293b;
+    color: var(--slate-700);
     margin-bottom: 1.5rem;
     line-height: 1.6;
   }
@@ -105,18 +113,19 @@
 // ── Empty State ────────────────────────────────────────────────────────
 .empty-state {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 4.5rem 2rem;
 
   .empty-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
     line-height: 1;
+    filter: grayscale(0.2);
   }
 
   h3 {
     font-size: 1.1rem;
-    font-weight: 600;
-    color: #1e293b;
+    font-weight: 700;
+    color: var(--slate-700);
     margin-bottom: 0.5rem;
   }
 
@@ -127,23 +136,25 @@
     max-width: 300px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.6;
   }
 }
 
 // ── Status Badge ───────────────────────────────────────────────────────
 .status-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 0.2rem 0.65rem;
   border-radius: 100px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 
   &.status-active      { background: #dcfce7; color: #166534; }
-  &.status-interested  { background: #e0f2fe; color: #075985; }
+  &.status-interested  { background: #e0f2fe; color: #0369a1; }
   &.status-accepted    { background: #dcfce7; color: #166534; }
   &.status-declined    { background: #fee2e2; color: #991b1b; }
-  &.status-unavailable { background: #f1f5f9; color: var(--slate-500); }
+  &.status-unavailable { background: var(--slate-100); color: var(--slate-500); }
   &.status-paused      { background: #fef9c3; color: #854d0e; }
 }

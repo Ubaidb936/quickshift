@@ -32,19 +32,22 @@ export default function BusinessDashboard() {
     setToast({ message: 'Shift deleted', type: 'success' })
   }
 
-  if (loading) return <Spinner text="Loading your shifts..." />
+  if (loading) return <div className="container"><Spinner text="Loading your shifts..." /></div>
 
   return (
-    <div>
+    <div className="container">
       {confirmDelete && (
         <ConfirmDialog
-          message="Are you sure you want to delete this shift?"
+          message="Are you sure you want to delete this shift? This cannot be undone."
           onConfirm={() => deleteShift(confirmDelete)}
           onCancel={() => setConfirmDelete(null)}
         />
       )}
       <div className="dashboard-header">
-        <h2 className="page-title">My Shifts</h2>
+        <div>
+          <h2 className="page-title">My Shifts</h2>
+          <p className="page-subtitle">{shifts.length} shift{shifts.length !== 1 ? 's' : ''} posted</p>
+        </div>
         <Link to="/shifts/create" className="btn-primary">+ Post Shift</Link>
       </div>
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '' })} />
@@ -57,8 +60,10 @@ export default function BusinessDashboard() {
                 <span className="pay">${shift.pay_rate}/hr</span>
               </div>
               <p>{shift.num_workers} worker{shift.num_workers > 1 ? 's' : ''} needed</p>
-              <p>Status: <span className={`status-badge status-${shift.status}`}>{shift.status}</span></p>
-              {shift.duties && <p><strong>Duties:</strong> {shift.duties}</p>}
+              <p style={{ marginTop: '0.35rem' }}>
+                Status: <span className={`status-badge status-${shift.status}`}>{shift.status}</span>
+              </p>
+              {shift.duties && <p style={{ marginTop: '0.35rem' }}><strong>Duties:</strong> {shift.duties}</p>}
               <div className="actions">
                 <button onClick={() => navigate(`/shifts/${shift.id}/applicants`)}>View Applicants</button>
                 <button onClick={() => pauseShift(shift.id)}>

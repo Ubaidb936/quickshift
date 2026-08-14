@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from typing import List
 from app.database.db import get_db
 from app.models.models import Match, Shift
@@ -9,6 +11,9 @@ from app.logger import get_logger
 
 router = APIRouter(prefix="/matches", tags=["matches"])
 logger = get_logger("matches")
+
+# Reusable load options — always need worker + shift when building a MatchResponse
+_MATCH_OPTIONS = [selectinload(Match.worker), selectinload(Match.shift)]
 
 
 def _to_response(m: Match) -> MatchResponse:
@@ -28,29 +33,43 @@ def _to_response(m: Match) -> MatchResponse:
 
 # NOTE: /my-matches and /interested/{shift_id} must be before /{match_id}/...
 @router.get("/my-matches", response_model=List[MatchResponse])
-def get_my_matches(db: Session = Depends(get_db), user=Depends(require_worker)):
-    matches = db.query(Match).filter(Match.worker_id == user["id"]).all()
-    return [_to_response(m) for m in matches]
+async def get_my_matches(db: AsyncSession = Depends(get_db), user=Depends(require_worker)):
+    result = await db.execute(
+        select(Match).where(Match.worker_id == user["id"]).options(*_MATCH_OPTIONS)
+    )
+    return [_to_response(m) for m in result.scalars().all()]
 
 
 @router.get("/interested/{shift_id}", response_model=List[MatchResponse])
-def get_interested(shift_id: int, db: Session = Depends(get_db), user=Depends(require_business)):
-    shift = db.query(Shift).filter(Shift.id == shift_id, Shift.business_id == user["id"]).first()
-    if not shift:
+async def get_interested(shift_id: int, db: AsyncSession = Depends(get_db), user=Depends(require_business)):
+    shift_result = await db.execute(
+        select(Shift).where(Shift.id == shift_id, Shift.business_id == user["id"])
+    )
+    if not shift_result.scalars().first():
         raise HTTPException(status_code=404, detail="Shift not found")
-    matches = db.query(Match).filter(Match.shift_id == shift_id).all()
-    return [_to_response(m) for m in matches]
+
+    result = await db.execute(
+        select(Match).where(Match.shift_id == shift_id).options(*_MATCH_OPTIONS)
+    )
+    return [_to_response(m) for m in result.scalars().all()]
 
 
 @router.post("/interest/{shift_id}", response_model=MatchResponse)
-def show_interest(shift_id: int, db: Session = Depends(get_db), user=Depends(require_worker)):
-    shift = db.query(Shift).filter(Shift.id == shift_id, Shift.status == "active").first()
+async def show_interest(shift_id: int, db: AsyncSession = Depends(get_db), user=Depends(require_worker)):
+    shift_result = await db.execute(
+        select(Shift).where(Shift.id == shift_id, Shift.status == "active")
+    )
+    shift = shift_result.scalars().first()
     if not shift:
         raise HTTPException(status_code=404, detail="Shift not found or not active")
-    existing = db.query(Match).filter(Match.shift_id == shift_id, Match.worker_id == user["id"]).first()
-    if existing:
+
+    existing_result = await db.execute(
+        select(Match).where(Match.shift_id == shift_id, Match.worker_id == user["id"])
+    )
+    if existing_result.scalars().first():
         logger.warning("Duplicate interest attempt", extra={"worker_id": user["id"], "shift_id": shift_id})
         raise HTTPException(status_code=400, detail="Already shown interest in this shift")
+
     match = Match(
         business_id=shift.business_id,
         worker_id=user["id"],
@@ -58,40 +77,56 @@ def show_interest(shift_id: int, db: Session = Depends(get_db), user=Depends(req
         status="interested",
     )
     db.add(match)
-    db.commit()
-    db.refresh(match)
+    await db.commit()
+    await db.refresh(match)
+
+    # reload with relationships so _to_response can access match.worker and match.shift
+    result = await db.execute(
+        select(Match).where(Match.id == match.id).options(*_MATCH_OPTIONS)
+    )
+    match = result.scalars().first()
+
     logger.info("Worker showed interest", extra={"match_id": match.id, "worker_id": user["id"], "shift_id": shift_id})
     return _to_response(match)
 
 
 @router.patch("/{match_id}/accept")
-def accept_worker(match_id: int, db: Session = Depends(get_db), user=Depends(require_business)):
-    match = db.query(Match).filter(Match.id == match_id, Match.business_id == user["id"]).first()
+async def accept_worker(match_id: int, db: AsyncSession = Depends(get_db), user=Depends(require_business)):
+    result = await db.execute(
+        select(Match).where(Match.id == match_id, Match.business_id == user["id"])
+    )
+    match = result.scalars().first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
     match.status = "accepted"
-    db.commit()
+    await db.commit()
     logger.info("Worker accepted", extra={"match_id": match_id, "worker_id": match.worker_id, "business_id": user["id"]})
     return {"status": "accepted"}
 
 
 @router.patch("/{match_id}/decline")
-def decline_worker(match_id: int, db: Session = Depends(get_db), user=Depends(require_business)):
-    match = db.query(Match).filter(Match.id == match_id, Match.business_id == user["id"]).first()
+async def decline_worker(match_id: int, db: AsyncSession = Depends(get_db), user=Depends(require_business)):
+    result = await db.execute(
+        select(Match).where(Match.id == match_id, Match.business_id == user["id"])
+    )
+    match = result.scalars().first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
     match.status = "declined"
-    db.commit()
+    await db.commit()
     logger.info("Worker declined", extra={"match_id": match_id, "worker_id": match.worker_id, "business_id": user["id"]})
     return {"status": "declined"}
 
 
 @router.patch("/{match_id}/unavailable")
-def mark_unavailable(match_id: int, db: Session = Depends(get_db), user=Depends(require_worker)):
-    match = db.query(Match).filter(Match.id == match_id, Match.worker_id == user["id"]).first()
+async def mark_unavailable(match_id: int, db: AsyncSession = Depends(get_db), user=Depends(require_worker)):
+    result = await db.execute(
+        select(Match).where(Match.id == match_id, Match.worker_id == user["id"])
+    )
+    match = result.scalars().first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
     match.status = "unavailable"
-    db.commit()
+    await db.commit()
     logger.info("Worker marked unavailable", extra={"match_id": match_id, "worker_id": user["id"]})
     return {"status": "unavailable"}

@@ -1,22 +1,23 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 from app.utils.config import settings
 
-engine = create_engine(
+engine = create_async_engine(
     settings.DATABASE_URL,
-    # Connection pool — reuse connections instead of opening a new one per request
-    pool_size=10,        # keep 10 connections open permanently
-    max_overflow=20,     # allow 20 extra during traffic spikes (total max = 30)
-    pool_pre_ping=True,  # test connection before use — handles DB restarts gracefully
+    pool_size=10,       # keep 10 connections open permanently
+    max_overflow=20,    # allow 20 extra during traffic spikes (total max = 30)
+    pool_pre_ping=True, # test connection before use — handles DB restarts gracefully
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,  # don't expire attrs after commit — avoids lazy-load errors
+)
+
 Base = declarative_base()
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session

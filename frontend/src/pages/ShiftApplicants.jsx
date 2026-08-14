@@ -27,10 +27,10 @@ export default function ShiftApplicants() {
     setConfirm(null)
   }
 
-  if (loading) return <Spinner text="Loading applicants..." />
+  if (loading) return <div className="container"><Spinner text="Loading applicants..." /></div>
 
   return (
-    <div>
+    <div className="container">
       {confirm && (
         <ConfirmDialog
           message={`Are you sure you want to ${confirm.action} this worker?`}
@@ -39,17 +39,22 @@ export default function ShiftApplicants() {
         />
       )}
       <div className="dashboard-header">
-        <h2 className="page-title">Applicants</h2>
-        <Link to="/dashboard" className="btn-secondary">← Back</Link>
+        <div>
+          <h2 className="page-title">Applicants</h2>
+          <p className="page-subtitle">{matches.length} worker{matches.length !== 1 ? 's' : ''} interested</p>
+        </div>
+        <Link to="/dashboard" className="btn-secondary">← Back to Dashboard</Link>
       </div>
       <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '' })} />
       {matches.length === 0
         ? <EmptyState icon="👥" title="No applicants yet" description="Workers who show interest in this shift will appear here." />
         : matches.map(match => (
             <div key={match.id} className={`applicant-card status-${match.status}`}>
-              <h3>{match.worker_name}</h3>
-              <p>{match.worker_profession} · {match.worker_location}</p>
-              <p>Status: <span className={`status-badge status-${match.status}`}>{match.status}</span></p>
+              <div className="shift-header">
+                <h3>{match.worker_name}</h3>
+                <span className={`status-badge status-${match.status}`}>{match.status}</span>
+              </div>
+              <p className="business-name">{match.worker_profession} · {match.worker_location}</p>
               {match.status === 'interested' && (
                 <div className="actions">
                   <button className="btn-success" onClick={() => setConfirm({ id: match.id, action: 'accept' })}>Accept</button>

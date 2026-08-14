@@ -15,26 +15,33 @@ export default function Login() {
       saveUser(data)
       navigate(data.role === 'business' ? '/dashboard' : '/feed')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed')
+      setError(err.response?.data?.detail || 'Login failed. Check your credentials.')
     }
   }
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value })
 
   return (
-    <div className="auth-page">
-      <h2>Login</h2>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={form.email} onChange={set('email')} required />
-        <input type="password" placeholder="Password" value={form.password} onChange={set('password')} required />
-        <select value={form.role} onChange={set('role')}>
-          <option value="worker">I am a Worker</option>
-          <option value="business">I am a Business</option>
-        </select>
-        <button type="submit">Login</button>
-      </form>
-      <p>No account? <Link to="/register">Register here</Link></p>
+    <div className="auth-wrapper">
+      <div className="auth-page">
+        <div className="auth-logo">
+          <Link to="/">
+            <span className="brand-icon">⚡</span>Quick<span>Shift</span>
+          </Link>
+        </div>
+        <h2>Welcome back</h2>
+        {error && <p className="error">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <input type="email" placeholder="Email address" value={form.email} onChange={set('email')} required />
+          <input type="password" placeholder="Password" value={form.password} onChange={set('password')} required />
+          <select value={form.role} onChange={set('role')}>
+            <option value="worker">I am a Worker</option>
+            <option value="business">I am a Business</option>
+          </select>
+          <button type="submit">Sign In</button>
+        </form>
+        <p>No account? <Link to="/register/worker">Register as Worker</Link> or <Link to="/register/business">Business</Link></p>
+      </div>
     </div>
   )
 }

@@ -2,51 +2,90 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0 2rem;
+  height: 60px;
   background: var(--slate-900);
   color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 
   .brand {
-    color: #38bdf8;
-    font-weight: 700;
-    font-size: 1.25rem;
+    color: white;
+    font-weight: 800;
+    font-size: 1.15rem;
     text-decoration: none;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    .brand-icon {
+      font-size: 1rem;
+    }
+
+    span:not(.brand-icon) {
+      color: var(--sky-accent);
+    }
   }
 
   .nav-links {
     display: flex;
-    gap: 1.25rem;
+    gap: 1.5rem;
     align-items: center;
-    flex-wrap: wrap;
 
     a {
-      color: #94a3b8;
+      color: var(--slate-400);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.15s;
       &:hover { color: white; }
     }
 
-    .greeting { color: #64748b; font-size: 0.875rem; }
+    .greeting {
+      color: var(--slate-500);
+      font-size: 0.875rem;
+      padding-right: 1rem;
+      border-right: 1px solid var(--slate-700);
+    }
+
+    .btn-nav-cta {
+      background: var(--sky);
+      color: white !important;
+      padding: 0.4rem 1rem;
+      border-radius: 7px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.15s;
+      &:hover { background: var(--sky-dark); }
+    }
 
     button {
       background: none;
       border: 1px solid var(--slate-700);
-      color: #94a3b8;
-      padding: 0.3rem 0.75rem;
+      color: var(--slate-400);
+      padding: 0.35rem 0.85rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 0.875rem;
-      &:hover { border-color: #94a3b8; color: white; }
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.15s;
+      &:hover { border-color: var(--slate-500); color: white; }
     }
   }
 
-  @media (max-width: 540px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
+  @media (max-width: 600px) {
+    padding: 0 1rem;
 
-    .nav-links { gap: 0.75rem; }
+    .nav-links {
+      gap: 0.75rem;
+
+      .greeting { display: none; }
+
+      a { font-size: 0.8rem; }
+    }
   }
 }

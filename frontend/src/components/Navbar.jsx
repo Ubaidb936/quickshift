@@ -7,7 +7,10 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="brand">Instawork</Link>
+      <Link to="/" className="brand">
+        <span className="brand-icon">⚡</span>
+        Quick<span>Shift</span>
+      </Link>
       <div className="nav-links">
         {authenticated ? (
           <>
@@ -28,7 +31,7 @@ export default function Navbar() {
         ) : (
           <>
             <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <Link to="/" className="btn-nav-cta">Get Started</Link>
           </>
         )}
       </div>
