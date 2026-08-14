@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER:     quickshift
+      POSTGRES_PASSWORD: quickshift
+      POSTGRES_DB:       quickshift
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # data survives docker-compose down
+    ports:
+      - "5432:5432"   # expose so you can connect with a DB client (TablePlus, DBeaver)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quickshift"]
+      interval: 5s    # check every 5 seconds
+      timeout: 5s     # fail if no response in 5 seconds
+      retries: 5      # give up after 5 failures
+
   backend:
     build:
       context: .
@@ -10,8 +27,11 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - DATABASE_URL=sqlite:///./instawork.db
+      - DATABASE_URL=postgresql://quickshift:quickshift@db:5432/quickshift
       - SECRET_KEY=changeme-in-production
+    depends_on:
+      db:
+        condition: service_healthy   # wait for Postgres to be ready before starting
 
   frontend:
     build:
@@ -24,3 +44,6 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:   # named volume — managed by Docker, persists between restarts

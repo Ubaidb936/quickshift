@@ -4,8 +4,12 @@ from app.utils.config import settings
 
 engine = create_engine(
     settings.DATABASE_URL,
-    connect_args={"check_same_thread": False},
+    # Connection pool — reuse connections instead of opening a new one per request
+    pool_size=10,        # keep 10 connections open permanently
+    max_overflow=20,     # allow 20 extra during traffic spikes (total max = 30)
+    pool_pre_ping=True,  # test connection before use — handles DB restarts gracefully
 )
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

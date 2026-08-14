@@ -27,7 +27,7 @@ def register_business(data: BusinessRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(business)
 
-    logger.info("Business registered", extra={"business_id": business.id, "name": business.name})
+    logger.info("Business registered", extra={"business_id": business.id, "business_name": business.name})
     token = create_token({"sub": business.email, "role": "business", "id": business.id})
     return TokenResponse(access_token=token, role="business", user_id=business.id, name=business.name)
 
@@ -49,7 +49,7 @@ def register_worker(data: WorkerRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(worker)
 
-    logger.info("Worker registered", extra={"worker_id": worker.id, "name": worker.name, "profession": worker.profession})
+    logger.info("Worker registered", extra={"worker_id": worker.id, "worker_name": worker.name, "profession": worker.profession})
     token = create_token({"sub": worker.email, "role": "worker", "id": worker.id})
     return TokenResponse(access_token=token, role="worker", user_id=worker.id, name=worker.name)
 

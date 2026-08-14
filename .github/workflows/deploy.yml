@@ -21,7 +21,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/b1
+            cd ~/quickshift
             git pull origin main
             docker-compose down -v
             docker-compose up --build -d
