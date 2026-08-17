@@ -20,6 +20,7 @@ class OpenAILLM(BaseLLM):
             "model": self.model,
             "messages": openai_messages,
             "stream": True,
+            "stream_options": {"include_usage": True},
             "temperature": 0.2,
         }
 
@@ -34,8 +35,14 @@ class OpenAILLM(BaseLLM):
         while attempt < MAX_RETRIES:
             try:
                 response = await self.client.chat.completions.create(**params)
+                usage_chunk = None
 
                 async for chunk in response:
+                    if not chunk.choices:
+                        if chunk.usage:
+                            usage_chunk = chunk.usage
+                        continue
+
                     delta = chunk.choices[0].delta
 
                     if delta.content:
@@ -47,6 +54,13 @@ class OpenAILLM(BaseLLM):
                                 yield {"type": "tool_call", "name": tc.function.name, "arguments": ""}
                             if tc.function.arguments:
                                 yield {"type": "tool_call", "name": None, "arguments": tc.function.arguments}
+
+                if usage_chunk:
+                    yield {
+                        "type": "usage",
+                        "input_tokens": usage_chunk.prompt_tokens,
+                        "output_tokens": usage_chunk.completion_tokens,
+                    }
                 return
 
             except RateLimitError:

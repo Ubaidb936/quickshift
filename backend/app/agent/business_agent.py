@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime
 from typing import AsyncIterator
 from app.agent.base import BaseAgent
@@ -63,6 +64,10 @@ class BusinessAgent(BaseAgent):
         )
 
     async def run(self, user_message: str) -> AsyncIterator[str]:
+        start = time.perf_counter()
+        total_input_tokens = 0
+        total_output_tokens = 0
+
         try:
             if not self.history:
                 self.history.append(Message(role="system", content=self.system_prompt()))
@@ -77,13 +82,15 @@ class BusinessAgent(BaseAgent):
             tool_call_args = ""
 
             async for chunk in self.llm.stream(self.history, tools=tool_schemas):
-                if isinstance(chunk, dict) and chunk.get("type") == "tool_call":
-                    # lock onto the first tool call name we see, ignore any others
-                    if chunk.get("name") and not tool_call_name:
-                        tool_call_name = chunk["name"]
-                    # only accumulate args for the locked-in tool call
-                    if tool_call_name and not chunk.get("name"):
-                        tool_call_args += chunk.get("arguments", "")
+                if isinstance(chunk, dict):
+                    if chunk.get("type") == "usage":
+                        total_input_tokens += chunk["input_tokens"]
+                        total_output_tokens += chunk["output_tokens"]
+                    elif chunk.get("type") == "tool_call":
+                        if chunk.get("name") and not tool_call_name:
+                            tool_call_name = chunk["name"]
+                        if tool_call_name and not chunk.get("name"):
+                            tool_call_args += chunk.get("arguments", "")
                 else:
                     full_response += chunk
                     yield chunk
@@ -103,8 +110,13 @@ class BusinessAgent(BaseAgent):
 
                 final_response = ""
                 async for chunk in self.llm.stream(self.history):
-                    final_response += chunk
-                    yield chunk
+                    if isinstance(chunk, dict):
+                        if chunk.get("type") == "usage":
+                            total_input_tokens += chunk["input_tokens"]
+                            total_output_tokens += chunk["output_tokens"]
+                    else:
+                        final_response += chunk
+                        yield chunk
 
                 self.history.append(Message(role="assistant", content=final_response))
 
@@ -115,6 +127,10 @@ class BusinessAgent(BaseAgent):
                     tool_args=args,
                     result_count=result_count,
                     agent_response=final_response,
+                    latency_ms=round((time.perf_counter() - start) * 1000, 2),
+                    input_tokens=total_input_tokens or None,
+                    output_tokens=total_output_tokens or None,
+                    status="success",
                 )
             else:
                 self.history.append(Message(role="assistant", content=full_response))
@@ -126,14 +142,37 @@ class BusinessAgent(BaseAgent):
                     tool_args=None,
                     result_count=None,
                     agent_response=full_response,
+                    latency_ms=round((time.perf_counter() - start) * 1000, 2),
+                    input_tokens=total_input_tokens or None,
+                    output_tokens=total_output_tokens or None,
+                    status="success",
                 )
 
             self.db.add(log)
             await self.db.commit()
 
-        except Exception:
+        except Exception as exc:
             logger.exception("Agent run() failed for business_id=%s", self.business.id)
             yield "\n\nSomething went wrong. Please try again."
+
+            try:
+                error_log = AgentConversation(
+                    business_id=self.business.id,
+                    user_message=user_message,
+                    tool_called=None,
+                    tool_args=None,
+                    result_count=None,
+                    agent_response=None,
+                    latency_ms=round((time.perf_counter() - start) * 1000, 2),
+                    input_tokens=total_input_tokens or None,
+                    output_tokens=total_output_tokens or None,
+                    status="error",
+                    error_message=str(exc),
+                )
+                self.db.add(error_log)
+                await self.db.commit()
+            except Exception:
+                logger.exception("Failed to persist error log for business_id=%s", self.business.id)
 
         finally:
             yield "\0"

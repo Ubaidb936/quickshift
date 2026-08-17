@@ -72,6 +72,11 @@ class AgentConversation(Base):
     result_count = Column(Integer, nullable=True)
     agent_response = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+    latency_ms = Column(Float, nullable=True)
+    input_tokens = Column(Integer, nullable=True)
+    output_tokens = Column(Integer, nullable=True)
+    error_message = Column(Text, nullable=True)
+    status = Column(String, nullable=False, default="success")
 
     business = relationship("Business")
 
