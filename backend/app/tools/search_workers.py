@@ -1,9 +1,14 @@
+import hashlib
+import json
 import math
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.tools.base import BaseTool
 from app.models.models import Worker
 from app.utils.embeddings import embed_text
+from app.database.redis import redis_client
+
+SEARCH_CACHE_TTL = 300  # 5 minutes
 
 
 # Metro area clusters — searching for a city also surfaces workers from nearby cities.
@@ -74,6 +79,18 @@ class SearchWorkersTool(BaseTool):
         day_of_week: str | None = None,
         limit: int = 10,
     ) -> dict:
+        business_id = self.business.id if self.business else 0
+        cache_params = {
+            "query": query, "profession": profession, "location": location,
+            "availability": availability, "experience_years": experience_years,
+            "shift_date": shift_date, "day_of_week": day_of_week, "limit": limit,
+        }
+        cache_key = f"qs:sw:{business_id}:{hashlib.sha256(json.dumps(cache_params, sort_keys=True).encode()).hexdigest()}"
+        redis = redis_client.get()
+        cached = await redis.get(cache_key)
+        if cached:
+            return json.loads(cached)
+
         # build enriched query for embedding — profession, experience, and date
         # all go in here as soft signals, not hard SQL filters
         enriched_query = query
@@ -118,7 +135,7 @@ class SearchWorkersTool(BaseTool):
         result = await self.db.execute(stmt)
         workers = result.scalars().all()
 
-        return {
+        payload = {
             "workers": [
                 {
                     "id": w.id,
@@ -133,6 +150,8 @@ class SearchWorkersTool(BaseTool):
                 for w in workers
             ]
         }
+        await redis.setex(cache_key, SEARCH_CACHE_TTL, json.dumps(payload))
+        return payload
 
     def schema(self) -> dict:
         return {

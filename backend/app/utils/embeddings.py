@@ -1,5 +1,8 @@
+import hashlib
+import json
 from openai import AsyncOpenAI
 from app.utils.config import settings
+from app.database.redis import redis_client
 
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -28,8 +31,17 @@ def build_worker_text(worker) -> str:
 
 
 async def embed_text(text: str) -> list[float]:
+    cache_key = f"qs:emb:{hashlib.sha256(text.encode()).hexdigest()}"
+    redis = redis_client.get()
+
+    cached = await redis.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
     response = await client.embeddings.create(
         model="text-embedding-3-small",
         input=text,
     )
-    return response.data[0].embedding
+    vector = response.data[0].embedding
+    await redis.setex(cache_key, 86400, json.dumps(vector))
+    return vector
