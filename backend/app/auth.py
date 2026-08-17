@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.utils.config import settings
+from app.database.redis import redis_client
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
@@ -34,8 +35,12 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    return decode_token(credentials.credentials)
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    payload = decode_token(token)
+    if await redis_client.get().exists(f"blacklist:{token}"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
+    return payload
     # returns {"sub": email, "role": "business"/"worker", "id": user_id}
 
 

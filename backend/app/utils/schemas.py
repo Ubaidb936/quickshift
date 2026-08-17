@@ -11,6 +11,12 @@ class BusinessRegister(BaseModel):
     password: str
     location: Optional[str] = None
     working_hours: Optional[str] = None
+    phone: Optional[str] = None
+    logo_url: Optional[str] = None
+    industry: Optional[str] = None
+    description: Optional[str] = None
+    vibe: Optional[str] = None
+    team_size: Optional[str] = None
 
 
 class WorkerRegister(BaseModel):
@@ -19,6 +25,10 @@ class WorkerRegister(BaseModel):
     password: str
     location: Optional[str] = None
     profession: Optional[str] = None
+    skills: Optional[str] = None
+    experience_years: Optional[int] = None
+    availability: Optional[str] = None
+    bio: Optional[str] = None
 
 
 class LoginRequest(BaseModel):

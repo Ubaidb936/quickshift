@@ -4,9 +4,10 @@ export const registerBusiness = (data) => api.post('/auth/register/business', da
 export const registerWorker = (data) => api.post('/auth/register/worker', data)
 export const login = (email, password, role) => api.post('/auth/login', { email, password, role })
 
-export const logout = () => {
+export const logout = async () => {
+  try { await api.post('/auth/logout') } catch (_) {}
   localStorage.clear()
-  window.location.href = '/login'
+  window.location.href = '/'
 }
 
 export const saveUser = ({ access_token, role, user_id, name }) => {

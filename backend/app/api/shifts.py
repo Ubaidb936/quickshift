@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -7,10 +8,14 @@ from app.database.db import get_db
 from app.models.models import Shift
 from app.utils.schemas import ShiftCreate, ShiftUpdate, ShiftResponse
 from app.auth import require_business, get_current_user
+from app.database.redis import redis_client
 from app.logger import get_logger
 
 router = APIRouter(prefix="/shifts", tags=["shifts"])
 logger = get_logger("shifts")
+
+SHIFTS_CACHE_KEY = "cache:active_shifts"
+SHIFTS_CACHE_TTL = 30  # seconds
 
 
 def _to_response(shift: Shift) -> ShiftResponse:

@@ -26,6 +26,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
+        # BaseHTTPMiddleware wraps responses in its own async machinery which
+        # breaks streaming. Pass streaming endpoints straight through.
+        if request.url.path == "/agent/chat":
+            return await call_next(request)
+
         if request.url.path in _SILENT_PATHS:
             return await call_next(request)
 

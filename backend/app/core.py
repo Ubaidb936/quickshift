@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.authentication import router as auth_router
 from app.api.shifts import router as shifts_router
 from app.api.matches import router as matches_router
+from app.api.agent import router as agent_router
 from app.middleware import LoggingMiddleware
 
 
@@ -28,5 +29,6 @@ def create_app(lifespan=None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(shifts_router)
     app.include_router(matches_router)
+    app.include_router(agent_router)
 
     return app

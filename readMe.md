@@ -66,6 +66,28 @@ worker has main page
 
 logins
 
+---
+
+## AI-First Product Vision
+
+QuickShift is built around autonomous agents that remove friction from both sides of the marketplace.
+
+### Agent Ideas
+
+1. **Shift Agent (worker-side)** — worker sets preferences once, agent auto-applies to matching shifts, negotiates hours/pay, and notifies only when confirmed
+
+2. **Staffing Agent (business-side)** — business describes their need in plain language ("I need 3 baristas Saturday morning"), agent finds, vets, and books workers autonomously
+
+3. **Dynamic Pricing Agent** — adjusts shift pay rates in real-time based on demand, worker supply, time-to-shift urgency, and historical fill rates
+
+4. **Reliability Score Agent** — continuously updates worker trust scores using behavior signals (cancellations, late arrivals, business ratings) to surface high-quality workers first
+
+5. **Forecast Agent** — analyzes a business's historical patterns and proactively recommends when to post shifts before they even ask
+
+6. **No-show Recovery Agent** — detects a worker cancellation, immediately re-searches and fills the gap, alerts the business only once it's solved
+
+---
+
 file structure for backend
 
      backend fast api

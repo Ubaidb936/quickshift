@@ -22,7 +22,11 @@ export default function App() {
     <BrowserRouter>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={
+          isAuthenticated()
+            ? <Navigate to={getUser().role === 'business' ? '/dashboard' : '/feed'} replace />
+            : <Landing />
+        } />
         <Route path="/login" element={<Login />} />
         <Route path="/register/business" element={<RegisterBusiness />} />
         <Route path="/register/worker" element={<RegisterWorker />} />

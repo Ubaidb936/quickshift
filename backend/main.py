@@ -4,13 +4,16 @@ from fastapi import FastAPI
 import app.models.models  # noqa: F401 — registers models with SQLAlchemy before table creation
 from app.core import create_app
 from app.database.db import Base, engine
+from app.database.redis import redis_client
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await redis_client.init()
     yield
+    await redis_client.close()
 
 
 app = create_app(lifespan=lifespan)

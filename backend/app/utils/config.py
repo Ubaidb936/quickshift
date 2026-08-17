@@ -1,14 +1,15 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = "changeme-in-production"
-    DATABASE_URL: str = "postgresql+asyncpg://quickshift:quickshift@db:5432/quickshift"
+    SECRET_KEY: str
+    DATABASE_URL: str
+    REDIS_URL: str
+    OPENAI_API_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     ALGORITHM: str = "HS256"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env")
 
 
 settings = Settings()
