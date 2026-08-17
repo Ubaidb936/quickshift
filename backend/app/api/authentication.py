@@ -9,6 +9,7 @@ from app.utils.schemas import BusinessRegister, WorkerRegister, LoginRequest, To
 from app.auth import hash_password, verify_password, create_token, get_current_user, security
 from app.database.redis import redis_client
 from app.utils.embeddings import build_business_text, build_worker_text, embed_text
+from app.utils.cache import invalidate_search_cache
 from app.logger import get_logger
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -73,6 +74,13 @@ async def register_worker(data: WorkerRegister, db: AsyncSession = Depends(get_d
     text = build_worker_text(worker)
     worker.embedding = await embed_text(text)
     await db.commit()
+
+    redis = redis_client.get()
+    deleted = await invalidate_search_cache(redis)
+    logger.info(
+        "Search cache invalidated after worker registration",
+        extra={"worker_id": worker.id, "keys_deleted": deleted},
+    )
 
     logger.info("Worker registered", extra={"worker_id": worker.id, "worker_name": worker.name, "profession": worker.profession})
     token = create_token({"sub": worker.email, "role": "worker", "id": worker.id})
