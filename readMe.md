@@ -1,149 +1,61 @@
-we need to build a two sided market place where a bussiness registers and post the shift that the workers can fill.
+# QuickShift
 
-Bussiness:
-    id
-    1- Name
-    2- location
-    3- working hours
-    etc
+A two-sided marketplace connecting businesses with hourly workers — plus an AI staffing agent that lets a business fill a shift just by describing what they need in plain English.
 
-shift:
-   id
-   1- position
-   2- working hours(start time to end time)
-   3- pay rate per hour
-   4- Duities
-   5- attire
-   6- number of workers
+> "I need 3 experienced bartenders for a fast-paced upscale restaurant this Saturday night" → the agent resolves the date, builds a semantic search, blends it with the business's own culture/vibe, ranks candidates, and can post the shift — all in one turn.
 
-worker
-  id
-  name
-  location
-  profession
-  etc
+## Highlights
 
-match
-  id
-  bussiness_id
-  worker_id
-  shift_id
+- **AI staffing agent** — OpenAI function-calling agent (`search_workers`, `post_shift`) with streaming responses over SSE, conversational history, and natural-language date/time resolution ("tomorrow night", "midnight" → next-day rollover).
+- **Semantic worker search** — `pgvector` embeddings (`text-embedding-3-small`) over worker profiles, blended 60/40 with the business's own culture embedding so results reflect *fit*, not just keyword match. Metro-area clustering (e.g. a San Francisco search also surfaces Oakland/Berkeley) layered on top of SQL filters before the vector rank.
+- **Redis caching** — embeddings cached by content hash (24h TTL), search results cached by query fingerprint (5m TTL), with cache invalidation on worker writes so results never go stale.
+- **Agent observability** — every agent turn is persisted with latency, input/output token counts, tool calls and arguments, and error traces — queryable via a `/agent/conversations` endpoint.
+- **Auth & marketplace core** — JWT-based auth for businesses and workers, shift CRUD (post/pause/edit/delete), and a match pipeline (interested → accepted/declined).
 
-There is a registor for bussiness and workers usuallly signup
+## Stack
 
-login is same? and routes to pages accordingly different for a user.
+| Layer | Tech |
+|---|---|
+| Backend | FastAPI (async), SQLAlchemy 2.0, PostgreSQL + pgvector, Redis |
+| AI | OpenAI (chat completions + embeddings), custom tool-calling agent loop |
+| Frontend | React 18, React Router, Sass, Vite |
+| Infra | Docker Compose, Gunicorn + Uvicorn workers |
 
-bussiness have a dashboard to post a shift.
+## Architecture
 
-// bussines router
-  / register enpoint
-  / login endpoint
-  / signout endpoint
-  / what jwt for authetication?
+```
+React (Vite) ── REST/SSE ──▶ FastAPI
+                               ├── auth (JWT)
+                               ├── shifts / matches
+                               └── agent ─┬─ OpenAI (function calling + streaming)
+                                          ├─ search_workers ─▶ pgvector similarity + SQL filters
+                                          └─ post_shift     ─▶ Postgres
+                               Redis: embedding cache · search-result cache
+```
 
-   
+## Running locally
 
-//shifts router
- / post_shift endpoint
- / get_shifts endpoint
- / delete_shift
- / pause_shift
- / edit shift
+```bash
+docker compose up
+```
 
-// matches
-  / get_interested
-  / accept worker
-  / decline worker
+- Frontend → `localhost:5173`
+- API → `localhost:8000`
+- Postgres (pgvector) and Redis spin up with health checks; the backend waits on both before seeding the schema.
 
+## Project layout
 
-worker has main page
+```
+backend/app/
+  agent/        tool-calling agent loop (streaming, logging, retries)
+  llm/          LLM provider abstraction (OpenAI implementation)
+  tools/        agent tools — search_workers, post_shift
+  api/          auth, shifts, matches, agent routers
+  models/       SQLAlchemy models (incl. pgvector columns)
+  utils/        embeddings, Redis cache helpers, config
 
-/ shifts around based on the locations and profession match
-
-/ show_interest
-
-/ not available for a match
-
-logins
-
----
-
-## AI-First Product Vision
-
-QuickShift is built around autonomous agents that remove friction from both sides of the marketplace.
-
-### Agent Ideas
-
-1. **Shift Agent (worker-side)** — worker sets preferences once, agent auto-applies to matching shifts, negotiates hours/pay, and notifies only when confirmed
-
-2. **Staffing Agent (business-side)** — business describes their need in plain language ("I need 3 baristas Saturday morning"), agent finds, vets, and books workers autonomously
-
-3. **Dynamic Pricing Agent** — adjusts shift pay rates in real-time based on demand, worker supply, time-to-shift urgency, and historical fill rates
-
-4. **Reliability Score Agent** — continuously updates worker trust scores using behavior signals (cancellations, late arrivals, business ratings) to surface high-quality workers first
-
-5. **Forecast Agent** — analyzes a business's historical patterns and proactively recommends when to post shifts before they even ask
-
-6. **No-show Recovery Agent** — detects a worker cancellation, immediately re-searches and fills the gap, alerts the business only once it's solved
-
----
-
-file structure for backend
-
-     backend fast api
-          app folder
-           api folder 
-               authentication.py
-               shifts.py
-               matches.py
-               
-           database folder
-               connect to sql database
-           other services folders
-           
-           utis folder
-              schema.py
-              config.py
-
-           core.py   cors and routers registered here
-           auth.py
-          main.py uvicorn run command
-
-    frontend react and javascript
-         pages
-         components
-         scss
-         app.js for routes
-         services
-           api.js
-           auth.js
-           
-    Dockerfile
-
-
-
-        
-              
-
-
-
-
-
-
-
-  
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
+frontend/src/
+  pages/        landing, auth, business dashboard, worker feed, matches
+  components/   shared UI (cards, dialogs, toasts)
+  services/     API + auth clients
+```
